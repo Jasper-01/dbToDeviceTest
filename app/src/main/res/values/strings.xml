@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">dbToDeviceTest</string>
+    <string name="url_default_display">URL</string>
+    <string name="title_default_display">Title</string>
+    <string name="channel_name_default_display">Channel Name</string>
+    <string name="next">Next</string>
+</resources>
