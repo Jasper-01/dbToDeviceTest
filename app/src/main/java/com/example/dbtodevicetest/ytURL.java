@@ -34,11 +34,4 @@ public class ytURL {
                 ", url='" + url + '\'' +
                 '}';
     }
-
-    public int getID(){ return id; }
-    public String getUserID(){ return userId; }
-    public String getVideoId(){ return videoId; }
-    public String getTitle(){ return title; }
-    public String getChannelName(){ return channelName; }
-    public String getUrl(){ return url; }
 }

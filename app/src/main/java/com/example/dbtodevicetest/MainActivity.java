@@ -1,73 +1,59 @@
 package com.example.dbtodevicetest;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.example.dbtodevicetest.databinding.ActivityMainBinding;
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
 import org.json.JSONArray;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
-    final private String dbURL = "http://ec2-54-167-37-239.compute-1.amazonaws.com:3000/data";
-
-    private ActivityMainBinding binding;
-
-    private TextView urlDisplay;
-    private TextView titleDisplay;
-    private TextView channelNameDisplay;
-    private Button nextBtn;
-    private List<ytURL> youTubeUrls;
-    static int counter = 0;
+    private TextView resultTextView;
+    private Button fetchButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
-        binding = ActivityMainBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
+        resultTextView = findViewById(R.id.resultTextView);
+        fetchButton = findViewById(R.id.fetchButton);
 
-        urlDisplay = findViewById(R.id.urlDisplay);
-        titleDisplay = findViewById(R.id.titleDisplay);
-        channelNameDisplay = findViewById(R.id.channelNameDisplay);
-        nextBtn = findViewById(R.id.nextBtn);
-
-        // Fetch data initially
-        fetchData();
-
-        nextBtn.setOnClickListener(new View.OnClickListener() {
+        fetchButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
-                if (youTubeUrls != null && !youTubeUrls.isEmpty()) {
-                    counter = (counter + 1) % youTubeUrls.size();
-                    displayData(counter);
-                }
+            public void onClick(View v) {
+                fetchData();
             }
         });
     }
 
     private void fetchData() {
-        Log.d("MainActivity", "URL: " + dbURL);
-        RequestQueue queue = Volley.newRequestQueue(this);
+        String url = "http://ec2-54-167-37-239.compute-1.amazonaws.com:3000/data";
+        Log.d("MainActivity", "URL: " + url);
 
+        RequestQueue queue = Volley.newRequestQueue(this);
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(
-                Request.Method.GET, dbURL, null,
+                Request.Method.GET, url, null,
                 new Response.Listener<JSONArray>() {
                     @Override
                     public void onResponse(JSONArray response) {
@@ -77,14 +63,12 @@ public class MainActivity extends AppCompatActivity {
                             String jsonString = response.toString();
                             // Parse JSON string with Gson
                             Gson gson = new Gson();
-                            youTubeUrls = gson.fromJson(jsonString, new TypeToken<List<ytURL>>(){}.getType());
+                            List<ytURL> youTubeUrls = gson.fromJson(jsonString, new TypeToken<List<ytURL>>(){}.getType());
 
-                            // Display the first item initially
-                            if (!youTubeUrls.isEmpty()) {
-                                displayData(counter);
-                            }
+                            // Display the data in a readable format
+                            resultTextView.setText(youTubeUrls.toString());
                         } catch (JsonSyntaxException e) {
-                            Log.d("MainActivity", "Parsing error: " + e.getMessage());
+                            resultTextView.setText("Parsing error: " + e.getMessage());
                         }
                     }
                 },
@@ -92,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         Log.e("MainActivity", "Error: " + error.getMessage());
+                        resultTextView.setText("Error: " + error.getMessage());
                     }
                 }
         );
@@ -100,12 +85,5 @@ public class MainActivity extends AppCompatActivity {
         Log.d("MainActivity", "Request added to queue");
     }
 
-    private void displayData(int index) {
-        if (youTubeUrls != null && index < youTubeUrls.size()) {
-            ytURL youTubeUrl = youTubeUrls.get(index);
-            urlDisplay.setText(youTubeUrl.getUrl());
-            titleDisplay.setText(youTubeUrl.getTitle());
-            channelNameDisplay.setText(youTubeUrl.getChannelName());
-        }
-    }
+
 }
